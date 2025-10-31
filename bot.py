@@ -1,20 +1,22 @@
-from aiogram import Bot, Dispatcher, types
+import asyncio
+from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils import executor
+from aiogram.filters import Command
 
-# 🔑 Встав свій токен сюди
+# 🔑 Встав свій токен
 TOKEN = "тут_твій_токен"
 
-bot = Bot(token=TOKEN)
+# 🧠 Ініціалізація
+bot = Bot(token=TOKEN, parse_mode="HTML")
 dp = Dispatcher()
 
-# 🎨 Кольори і стиль для повідомлень
+# 🎨 Кольори і стиль
 GOLD_EMOJI = "✨"
 BOLD = lambda text: f"<b>{text}</b>"
 ITALIC = lambda text: f"<i>{text}</i>"
 
-# 🏁 Команда /start
-@dp.message_handler(commands=["start"])
+# 🏁 /start команда
+@dp.message(Command("start"))
 async def start_message(message: types.Message):
     text = (
         f"{GOLD_EMOJI} {BOLD('Вітаю!')} \n\n"
@@ -23,24 +25,26 @@ async def start_message(message: types.Message):
         f"{ITALIC('Оберіть дію нижче:')}"
     )
 
-    # 🔘 Кнопки з посиланнями
-    keyboard = InlineKeyboardMarkup(row_width=1)
-    keyboard.add(
-        InlineKeyboardButton("🌐 Перейти на сайт", url="https://твій_сайт.com"),
-        InlineKeyboardButton("💎 Акції", url="https://твій_сайт.com/promo"),
-        InlineKeyboardButton("📬 Підписатися на оновлення", callback_data="subscribe")
-    )
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🌐 Перейти на сайт", url="https://твій_сайт.com")],
+        [InlineKeyboardButton(text="💎 Акції", url="https://твій_сайт.com/promo")],
+        [InlineKeyboardButton(text="📬 Підписатися на оновлення", callback_data="subscribe")]
+    ])
 
-    await message.answer(text, reply_markup=keyboard, parse_mode="HTML")
+    await message.answer(text, reply_markup=keyboard)
 
 
 # 📩 Обробка натискання "Підписатися"
-@dp.callback_query_handler(lambda c: c.data == "subscribe")
-async def subscribe_callback(callback_query: types.CallbackQuery):
-    await callback_query.answer("Дякуємо! Ти підписаний на оновлення 💛", show_alert=True)
+@dp.callback_query(F.data == "subscribe")
+async def subscribe_callback(callback: types.CallbackQuery):
+    await callback.answer("Дякуємо! Ти підписаний на оновлення 💛", show_alert=True)
 
 
-# ▶️ Запуск
-if __name__ == "__main__":
+# ▶️ Головна функція запуску
+async def main():
     print("Бот запущений 🚀")
-    executor.start_polling(dp, skip_updates=True)
+    await dp.start_polling(bot)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
