@@ -1,10 +1,13 @@
+import os
 import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 
-# 🔑 Встав свій токен
-TOKEN = "тут_твій_токен"
+# 🔑 Токен бере з Environment Variables
+TOKEN = os.getenv("BOT_TOKEN")
+if not TOKEN:
+    raise ValueError("BOT_TOKEN не заданий в Environment Variables!")
 
 # 🧠 Ініціалізація
 bot = Bot(token=TOKEN, parse_mode="HTML")
@@ -33,19 +36,15 @@ async def start_message(message: types.Message):
 
     await message.answer(text, reply_markup=keyboard)
 
-
 # 📩 Обробка натискання "Підписатися"
 @dp.callback_query(F.data == "subscribe")
 async def subscribe_callback(callback: types.CallbackQuery):
     await callback.answer("Дякуємо! Ти підписаний на оновлення 💛", show_alert=True)
-
 
 # ▶️ Головна функція запуску
 async def main():
     print("Бот запущений 🚀")
     await dp.start_polling(bot)
 
-
 if __name__ == "__main__":
     asyncio.run(main())
-
