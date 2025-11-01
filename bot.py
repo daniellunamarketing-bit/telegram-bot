@@ -30,7 +30,7 @@ async def start_message(message: types.Message):
     )
 
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🌐 Перейти на сайт", url="https://твій_сайт.com")],
+        [InlineKeyboardButton(text="🌐 Перейти на сайт", url="https://yourvipadvisor.com")],
         [InlineKeyboardButton(text="💎 Акції", url="https://твій_сайт.com/promo")],
         [InlineKeyboardButton(text="📬 Підписатися на оновлення", callback_data="subscribe")]
     ])
