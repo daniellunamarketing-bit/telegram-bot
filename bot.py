@@ -154,7 +154,7 @@ async def on_startup(app):
     await bot.set_my_commands(commands)
 
     # 🧩 Кнопка "Casinos" біля поля вводу
-    webapp = WebAppInfo(url="https://yourvipadvisor.com/casinos")
+    webapp = WebAppInfo(url="https://yourvipadvisor.com/")
     menu_button = MenuButtonWebApp(text="🎰 Casinos", web_app=webapp)
     await bot.set_chat_menu_button(menu_button)
 
