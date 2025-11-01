@@ -3,6 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
+from aiohttp import web  # веб-сервер для Render
 
 # 🔑 Токен бере з Environment Variables
 TOKEN = os.getenv("BOT_TOKEN")
@@ -41,10 +42,29 @@ async def start_message(message: types.Message):
 async def subscribe_callback(callback: types.CallbackQuery):
     await callback.answer("Дякуємо! Ти підписаний на оновлення 💛", show_alert=True)
 
-# ▶️ Головна функція запуску
-async def main():
-    print("Бот запущений 🚀")
-    await dp.start_polling(bot)
+# === Webhook частина ===
+async def on_startup(app):
+    webhook_url = f"{os.getenv('RENDER_EXTERNAL_URL')}/webhook/{TOKEN}"
+    await bot.set_webhook(webhook_url)
+    print(f"✅ Webhook встановлено: {webhook_url}")
+
+async def on_shutdown(app):
+    await bot.delete_webhook()
+    await bot.session.close()
+
+async def handle_webhook(request):
+    update = types.Update.model_validate(await request.json(), strict=False)
+    await dp.feed_update(bot, update)
+    return web.Response(status=200)
+
+def main():
+    app = web.Application()
+    app.router.add_post(f"/webhook/{TOKEN}", handle_webhook)
+    app.on_startup.append(on_startup)
+    app.on_shutdown.append(on_shutdown)
+
+    port = int(os.getenv("PORT", 5000))
+    web.run_app(app, host="0.0.0.0", port=port)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
